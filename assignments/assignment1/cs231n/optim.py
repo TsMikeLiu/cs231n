@@ -39,7 +39,7 @@ def sgd(w, dw, config=None):
     """
     if config is None:
         config = {}
-    config.setdefault("learning_rate", 1e-2)
+    config.setdefault("learning_rate", 1e-3)
 
     w -= config["learning_rate"] * dw
     return w, config
@@ -58,7 +58,7 @@ def sgd_momentum(w, dw, config=None):
     """
     if config is None:
         config = {}
-    config.setdefault("learning_rate", 1e-2)
+    config.setdefault("learning_rate", 1e-4)
     config.setdefault("momentum", 0.9)
     v = config.get("velocity", np.zeros_like(w))
 
@@ -69,7 +69,8 @@ def sgd_momentum(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
+    v = config["momentum"]*v - config["learning_rate"]*dw
+    next_w = w+v
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -94,8 +95,8 @@ def rmsprop(w, dw, config=None):
     """
     if config is None:
         config = {}
-    config.setdefault("learning_rate", 1e-2)
-    config.setdefault("decay_rate", 0.99)
+    config.setdefault("learning_rate", 1e-3)
+    config.setdefault("decay_rate", 0.5)
     config.setdefault("epsilon", 1e-8)
     config.setdefault("cache", np.zeros_like(w))
 
@@ -107,8 +108,9 @@ def rmsprop(w, dw, config=None):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    S_grad = config["decay_rate"] * config["cache"] + (1-config["decay_rate"]) * (dw**2)
+    next_w = w - config["learning_rate"] * dw / (np.sqrt(S_grad) + config["epsilon"])
+    config["cache"] = S_grad
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -133,7 +135,7 @@ def adam(w, dw, config=None):
     """
     if config is None:
         config = {}
-    config.setdefault("learning_rate", 1e-3)
+    config.setdefault("learning_rate", 1e-5)
     config.setdefault("beta1", 0.9)
     config.setdefault("beta2", 0.999)
     config.setdefault("epsilon", 1e-8)
@@ -151,7 +153,12 @@ def adam(w, dw, config=None):
     # using it in any calculations.                                           #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
+    config['t']+=1
+    config['v']=config['beta1']*config['v']+(1-config['beta1'])*dw
+    config['m']=config['beta2']*config['m']+(1-config['beta2'])*np.square(dw)
+    first=config['v']/(1-config['beta1']**config['t'])
+    second=config['m']/(1-config['beta2']**config['t'])
+    next_w=w-config['learning_rate']*first/np.sqrt(second+config['epsilon'])
     pass
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****

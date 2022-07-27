@@ -55,7 +55,15 @@ class TwoLayerNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        W1 = np.random.normal(loc=0, scale=weight_scale, size=(input_dim, hidden_dim))
+        W2 = np.random.normal(loc=0, scale=weight_scale, size=(hidden_dim, num_classes))
+        b1 = np.zeros(hidden_dim)
+        b2 = np.zeros(num_classes)
+
+        self.params['W1'] = W1
+        self.params['W2'] = W2
+        self.params['b1'] = b1
+        self.params['b2'] = b2
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -88,7 +96,11 @@ class TwoLayerNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        W1,W2,b1,b2 = self.params['W1'],self.params['W2'],self.params['b1'],self.params['b2']
+        out_h1, cache_h1 = affine_forward(X,W1,b1)
+        out_relu, cache_relu = relu_forward(out_h1)
+        out_h2, cache_h2 = affine_forward(out_relu, W2, b2)
+        scores = out_h2
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################
@@ -112,7 +124,24 @@ class TwoLayerNet(object):
         ############################################################################
         # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-        pass
+        # score loss
+        loss, d_loss = softmax_loss(scores, y)
+        # regularization loss
+        loss += self.reg * (np.sum(W1**2)/2 + np.sum(W2**2)/2)
+        # gradient
+        dout_h2, dW2, db2 = affine_backward(d_loss, cache_h2)
+        dout_relu = relu_backward(dout_h2, cache_relu)
+        dout_h1, dW1, db1 = affine_backward(dout_relu, cache_h1)
+
+        # gradient from regularization
+        dW1 += (2 * self.reg * W1)/2
+        dW2 += (2 * self.reg * W2)/2
+
+        grads['W1'] = dW1
+        grads['W2'] = dW2
+        grads['b1'] = db1
+        grads['b2'] = db2
+
 
         # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
         ############################################################################

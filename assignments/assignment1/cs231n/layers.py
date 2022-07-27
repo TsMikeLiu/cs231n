@@ -1,4 +1,5 @@
 from builtins import range
+from tkinter.messagebox import NO
 import numpy as np
 
 
@@ -96,8 +97,8 @@ def relu_forward(x):
     # TODO: Implement the ReLU forward pass.                                  #
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
-
-    pass
+    # print(x)
+    out = np.maximum(0,x)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -124,8 +125,8 @@ def relu_backward(dout, cache):
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
 
-    pass
-
+    # dx = np.zeros_like(x)
+    dx = dout * (x>0)
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
     #                             END OF YOUR CODE                            #
@@ -782,8 +783,18 @@ def svm_loss(x, y):
     # TODO: Copy over your solution from A1.
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    N, C = x.shape[0], x.shape[1]
+    score = x.copy()
+    score = score-x[range(N),y].reshape(N,-1)+1
+    score[range(N),y] = 0
+    score = np.maximum(score,0)
+    loss = np.sum(score)/N
 
-    pass
+    dL = 1.0
+    dL_N = dL/N
+    dx = dL_N * np.ones((N,C))
+    dx = dx*(score>0)
+    dx[range(N),y] -= np.sum(dx, axis=1)
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
@@ -812,8 +823,23 @@ def softmax_loss(x, y):
     # TODO: Copy over your solution from A1.
     ###########################################################################
     # *****START OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
+    # loss
+    N = x.shape[0]
+    C = x.shape[1]
+    score= x.copy()
+    score_max = np.max(score, axis=1, keepdims=True)
+    score -= score_max
+    softmax_func = -score[range(N),y] + np.log(np.sum(np.exp(score),axis=1))
+    loss = np.sum(softmax_func) / N
 
-    pass
+    # dx
+    d_score = np.zeros_like(x)
+    sum_exp_score = np.sum(np.exp(score), axis=1)
+    d_score = np.exp(score)/sum_exp_score.reshape(N,-1)
+    d_score[range(N),y] -= 1
+    dx = d_score/N
+
+
 
     # *****END OF YOUR CODE (DO NOT DELETE/MODIFY THIS LINE)*****
     ###########################################################################
